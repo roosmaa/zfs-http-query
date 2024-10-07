@@ -1,0 +1,16 @@
+[package]
+name = "zfs-http-query"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7" }
+futures-util = { version = "0.3" }
+hyper-util = { version = "0.1" }
+pin-utils = { version = "0.1" }
+shell-words = { version = "1.0" }
+subprocess = { version = "0.2" }
+tokio = { version = "1.0", features = ["full"] }
+tower-service = { version = "0.3" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
