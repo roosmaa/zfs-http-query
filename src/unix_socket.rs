@@ -1,3 +1,4 @@
+use std::fs::Permissions;
 use std::future::Future;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -9,6 +10,7 @@ use pin_utils::pin_mut;
 use tokio::sync::watch;
 use tower_service::Service;
 use tracing::{error, trace};
+use std::os::unix::fs::PermissionsExt;
 use futures_util::FutureExt;
 
 pub async fn serve<P, F>(
@@ -18,16 +20,18 @@ pub async fn serve<P, F>(
 )
 where
     P: Into<PathBuf>,
-    F: Future<Output = ()> + Send + 'static,
+    F: Future<Output=()> + Send + 'static,
 {
     let socket_path = socket_path.into();
     let _ = tokio::fs::remove_file(&socket_path).await;
     tokio::fs::create_dir_all(socket_path.parent().unwrap()).await.unwrap();
 
-    let listener = tokio::net::UnixListener::bind(socket_path.clone()).unwrap();
+    let listener = tokio::net::UnixListener::bind(&socket_path).unwrap();
+
+    // Make the socket accessible to everyone
+    tokio::fs::set_permissions(&socket_path, Permissions::from_mode(0o777)).await.unwrap();
 
     let mut make_service = app.into_make_service();
-    //.into_make_service_with_connect_info::<UnixConnectInfo>();
 
     let (signal_tx, signal_rx) = watch::channel(());
     let signal_tx = Arc::new(signal_tx);
