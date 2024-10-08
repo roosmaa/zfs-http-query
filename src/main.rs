@@ -7,7 +7,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use tokio::signal;
 
-const DEFAULT_SOCKET_PATH: &str = "/var/run/zfs-http-query.sock";
+const DEFAULT_SOCKET_PATH: &str = "/var/run/zfs-http-query/zfs-http-query.sock";
 const DEFAULT_BIN_PATH: &str = "/opt/zfs-http-query/bin";
 
 #[tokio::main]

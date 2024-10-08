@@ -12,7 +12,7 @@ cmd="$1"
 shift
 args="${*@Q}"
 
-exec curl --unix-socket "/var/run/zfs-http-query.sock" \
+exec curl --unix-socket "/var/run/zfs-http-query/zfs-http-query.sock" \
   -XPOST "http://zfs-http-query/zpool/$cmd" \
   -H "Content-Type: text/plain" \
   -d "$args"
