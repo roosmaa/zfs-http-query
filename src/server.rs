@@ -27,7 +27,15 @@ async fn zpool_list(
             | "-g" | "-H" | "-L" | "-p" | "-P" | "-v"
             => i += 1,
             "-o" | "-T" => i += 2, // skip validating next argument
-            arg => return (StatusCode::BAD_REQUEST, format!("disallowed argument: {}", arg)),
+            _ => break,
+        }
+    }
+    for i in i..arguments.len() {
+        let arg = arguments[i].as_str();
+        // Once all the known flags have been parsed, expect only pool names. When
+        // a flag-like argument is encountered, return an error.
+        if arg.starts_with("-") {
+            return (StatusCode::BAD_REQUEST, format!("disallowed argument: {}", arg));
         }
     }
 
