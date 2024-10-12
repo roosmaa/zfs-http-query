@@ -20,7 +20,7 @@ jobs:
           repositories: zfs-http-query
 
       - name: Renovate
-        uses: renovatebot/github-action@a1ed1d0adddfdf138192d1fbe3150a80094dee6a # v40.3.1
+        uses: renovatebot/github-action@7743ec9e19ceeb61a3862c5d4131e6710195af11 # v40.3.3
         with:
           token: ${{ steps.get_token.outputs.token  }}
         env:
