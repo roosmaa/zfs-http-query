@@ -1,18 +1,14 @@
-use axum::http::StatusCode;
 use axum::Router;
+use axum::http::StatusCode;
 use axum::routing::post;
 use subprocess::{Exec, Redirection};
 use tokio::task::spawn_blocking;
 
 pub fn router() -> Router {
-    Router::new()
-        .route("/zpool/list", post(zpool_list))
+    Router::new().route("/zpool/list", post(zpool_list))
 }
 
-
-async fn zpool_list(
-    arguments: String,
-) -> (StatusCode, String) {
+async fn zpool_list(arguments: String) -> (StatusCode, String) {
     let arguments = match shell_words::split(&arguments) {
         Ok(v) => v,
         Err(err) => return (StatusCode::BAD_REQUEST, err.to_string()),
@@ -23,9 +19,15 @@ async fn zpool_list(
     let mut i = 0;
     while i < arguments.len() {
         match arguments[i].as_str() {
-            "-j" | "--json-int" | "--json-pool-key-guid"
-            | "-g" | "-H" | "-L" | "-p" | "-P" | "-v"
-            => i += 1,
+            "-j"
+            | "--json-int"
+            | "--json-pool-key-guid"
+            | "-g"
+            | "-H"
+            | "-L"
+            | "-p"
+            | "-P"
+            | "-v" => i += 1,
             "-o" | "-T" => i += 2, // skip validating next argument
             _ => break,
         }
@@ -35,12 +37,17 @@ async fn zpool_list(
         // Once all the known flags have been parsed, expect only pool names. When
         // a flag-like argument is encountered, return an error.
         if arg.starts_with("-") {
-            return (StatusCode::BAD_REQUEST, format!("disallowed argument: {}", arg));
+            return (
+                StatusCode::BAD_REQUEST,
+                format!("disallowed argument: {}", arg),
+            );
         }
     }
 
     spawn_blocking(move || -> (StatusCode, String) {
-        let cap = Exec::cmd("zpool").arg("list").args(&arguments)
+        let cap = Exec::cmd("zpool")
+            .arg("list")
+            .args(&arguments)
             .stdout(Redirection::Pipe)
             .stderr(Redirection::Merge)
             .capture();
@@ -48,5 +55,7 @@ async fn zpool_list(
             Ok(cap) => (StatusCode::OK, cap.stdout_str()),
             Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         }
-    }).await.unwrap_or_else(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))
+    })
+    .await
+    .unwrap_or_else(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))
 }

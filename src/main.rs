@@ -1,10 +1,10 @@
-mod unix_socket;
 mod server;
+mod unix_socket;
 
-use std::{env, io};
 use std::fs::Permissions;
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
+use std::{env, io};
 use tokio::signal;
 
 const DEFAULT_SOCKET_PATH: &str = "/var/run/zfs-http-query/zfs-http-query.sock";
@@ -17,18 +17,14 @@ async fn main() {
     let socket_path = env::var("ZHQ_SOCKET_PATH").unwrap_or(DEFAULT_SOCKET_PATH.to_string());
     let bin_path = env::var("ZHQ_BIN_PATH").unwrap_or(DEFAULT_BIN_PATH.to_string());
 
-    install_scripts(bin_path).await.expect("failed to install shims");
+    install_scripts(bin_path)
+        .await
+        .expect("failed to install shims");
 
-    unix_socket::serve(
-        socket_path,
-        server::router(),
-        shutdown_signal(),
-    ).await;
+    unix_socket::serve(socket_path, server::router(), shutdown_signal()).await;
 }
 
-async fn install_scripts<P>(
-    bin_path: P,
-) -> io::Result<()>
+async fn install_scripts<P>(bin_path: P) -> io::Result<()>
 where
     P: Into<PathBuf>,
 {

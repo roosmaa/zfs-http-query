@@ -1,35 +1,35 @@
-use std::fs::Permissions;
-use std::future::Future;
-use std::path::PathBuf;
-use std::sync::Arc;
 use axum::Router;
+use futures_util::FutureExt;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use hyper_util::service::TowerToHyperService;
 use pin_utils::pin_mut;
+use std::fs::Permissions;
+use std::future::Future;
+use std::os::unix::fs::PermissionsExt;
+use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::sync::watch;
 use tower_service::Service;
 use tracing::{error, trace};
-use std::os::unix::fs::PermissionsExt;
-use futures_util::FutureExt;
 
-pub async fn serve<P, F>(
-    socket_path: P,
-    app: Router,
-    shutdown_signal: F,
-)
+pub async fn serve<P, F>(socket_path: P, app: Router, shutdown_signal: F)
 where
     P: Into<PathBuf>,
-    F: Future<Output=()> + Send + 'static,
+    F: Future<Output = ()> + Send + 'static,
 {
     let socket_path = socket_path.into();
     let _ = tokio::fs::remove_file(&socket_path).await;
-    tokio::fs::create_dir_all(socket_path.parent().unwrap()).await.unwrap();
+    tokio::fs::create_dir_all(socket_path.parent().unwrap())
+        .await
+        .unwrap();
 
     let listener = tokio::net::UnixListener::bind(&socket_path).unwrap();
 
     // Make the socket accessible to everyone
-    tokio::fs::set_permissions(&socket_path, Permissions::from_mode(0o777)).await.unwrap();
+    tokio::fs::set_permissions(&socket_path, Permissions::from_mode(0o777))
+        .await
+        .unwrap();
 
     let mut make_service = app.into_make_service();
 
