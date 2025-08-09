@@ -1,4 +1,4 @@
-FROM rust:1.88.0-alpine as builder
+FROM rust:1.89.0-alpine as builder
 RUN apk add --no-cache musl-dev
 WORKDIR /usr/src/zfs-http-query
 COPY . .
